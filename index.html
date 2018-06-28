@@ -29,8 +29,8 @@
     </div>
 </div>
 </body>
-<script src="../js/jquery.min.js"></script>
-<script src="jcanvas.min.js"></script>
+<script src="js/jquery.min.js"></script>
+<script src="js/jcanvas.min.js"></script>
 <script>
     window.onload = function () {
         var cvsWidth = $("#cvs").width();
@@ -42,8 +42,8 @@
         $("#cvs").attr("height", cvsHeight);
 
 
-        var str = $("#input-area").val();
-        var cmds = str.split("\n");
+        var str = $("#input-area").val().replace(/\n/g, "");
+        var cmds = str.split(";");
         cmds.remove("");
         drawCmds(cmds);
 
@@ -51,8 +51,9 @@
         $("#input-area").keydown(function (event) {
             // console.log(event.keyCode)
             if (event.keyCode == 59) {
-                var str = $("#input-area").val();
-                var cmds = str.split("\n");
+                var str = $("#input-area").val().replace(/\n/g, "");
+
+                var cmds = str.split(";");
                 cmds.remove("");
                 drawCmds(cmds);
             }
@@ -71,13 +72,28 @@
 
     function draw(cmd) {
         var ws = analyseCmd(cmd);
-
+        // console.log(ws)
         if (ws[0].toLowerCase() == "draw") {
             if (ws[1].toLowerCase() == "line") {
                 Draw.drawLine(ws);
             }
             if (ws[1].toLowerCase() == "circle") {
                 Draw.drawCircle(ws);
+            }
+            if (ws[1].toLowerCase() == "rectangle") {
+                Draw.drawRectangle(ws);
+            }
+            if (ws[1].toLowerCase() == "lines") {
+                Draw.drawLines(ws);
+            }
+            if (ws[1].toLowerCase() == "polygon") {
+                Draw.drawPolygon(ws);
+            }
+            if (ws[1].toLowerCase() == "slice") {
+                Draw.drawSlice(ws);
+            }
+            if (ws[1].toLowerCase() == "text") {
+                Draw.drawText(ws);
             }
         }
     }
@@ -96,7 +112,7 @@
             var to = ws.getWsPrototype("to");
             var color = ws.getWsPrototype("linecolor");
             var linewidth = ws.getWsPrototype("linewidth");
-
+            var rotate = ws.getWsPrototype("rotate");
             var x1 = Draw.getX(from);
             var y1 = Draw.getY(from);
             var x2 = Draw.getX(to);
@@ -107,19 +123,19 @@
                 x2: x2,
                 y2: y2,
                 strokeStyle: color,
-                strokeWidth: linewidth
+                strokeWidth: linewidth,
+                rotate: rotate
 
             })
         },
         drawCircle: function (ws) {
-            console.log(ws)
             var name = ws.getWsPrototype("named");
             var center = ws.getWsPrototype("center");
             var radius = ws.getWsPrototype("radius");
             var color = ws.getWsPrototype("linecolor");
             var linewidth = ws.getWsPrototype("linewidth");
             var fill = ws.getWsPrototype("fill");
-
+            var rotate = ws.getWsPrototype("rotate");
             var x = Draw.getX(center);
             var y = Draw.getY(center);
 
@@ -129,8 +145,128 @@
                 radius: radius,
                 strokeStyle: color,
                 strokeWidth: linewidth,
-                fillStyle: fill
+                fillStyle: fill,
+                rotate: rotate
             })
+        },
+        drawRectangle: function (ws) {
+            var name = ws.getWsPrototype("named");
+            var center = ws.getWsPrototype("center");
+            var width = ws.getWsPrototype("width");
+            var height = ws.getWsPrototype("height");
+            var color = ws.getWsPrototype("linecolor");
+            var linewidth = ws.getWsPrototype("linewidth");
+            var fill = ws.getWsPrototype("fill");
+            var rotate = ws.getWsPrototype("rotate");
+            var x = Draw.getX(center);
+            var y = Draw.getY(center);
+
+            $('#cvs').drawRect({
+                fillStyle: fill,
+                strokeStyle: color,
+                strokeWidth: linewidth,
+                x: x,
+                y: y,
+                width: width,
+                height: height,
+                rotate: rotate
+            });
+        },
+        drawLines: function (ws) {
+            var name = ws.getWsPrototype("named");
+            var color = ws.getWsPrototype("linecolor");
+            var linewidth = ws.getWsPrototype("linewidth");
+            var fill = ws.getWsPrototype("fill");
+            ws.removeExceptCoordinate();
+            // console.log(ws);
+            for (var i = 0; i < ws.length - 1; i++) {
+                var x1 = Draw.getX(ws[i]);
+                var y1 = Draw.getY(ws[i]);
+                var x2 = Draw.getX(ws[i + 1]);
+                var y2 = Draw.getY(ws[i + 1]);
+                $("#cvs").drawLine({
+                    x1: x1,
+                    y1: y1,
+                    x2: x2,
+                    y2: y2,
+                    strokeStyle: color,
+                    strokeWidth: linewidth
+
+                })
+
+            }
+        },
+        drawPolygon: function (ws) {
+            var name = ws.getWsPrototype("named");
+            var color = ws.getWsPrototype("linecolor");
+            var linewidth = ws.getWsPrototype("linewidth");
+            var fill = ws.getWsPrototype("fill");
+            var center = ws.getWsPrototype("center");
+            var radius = ws.getWsPrototype("radius");
+            var sides = ws.getWsPrototype("sides");
+            var concavity = ws.getWsPrototype("concavity");
+            var rotate = ws.getWsPrototype("rotate");
+            var x = Draw.getX(center);
+            var y = Draw.getY(center);
+            $('#cvs').drawPolygon({
+                fillStyle: fill,
+                strokeStyle: color,
+                x: x,
+                y: y,
+                radius: radius,
+                sides: sides,
+                concavity: concavity,
+                rotate: rotate
+            });
+        },
+        drawSlice: function (ws) {
+            var name = ws.getWsPrototype("named");
+            var color = ws.getWsPrototype("linecolor");
+            var linewidth = ws.getWsPrototype("linewidth");
+            var fill = ws.getWsPrototype("fill");
+            var center = ws.getWsPrototype("center");
+            var radius = ws.getWsPrototype("radius");
+            var rotate = ws.getWsPrototype("rotate");
+            var start = ws.getWsPrototype("start");
+            var end = ws.getWsPrototype("end");
+            var x = Draw.getX(center);
+            var y = Draw.getY(center);
+            $('#cvs').drawSlice({
+                fillStyle: fill,
+                strokeWidth: linewidth,
+                strokeStyle: color,
+                rotate: rotate,
+                x: x,
+                y: y,
+                radius: radius,
+                // start and end angles in degrees
+                start: start,
+                end: end
+            });
+
+        },
+        drawText: function (ws) {
+            var name = ws.getWsPrototype("named");
+            var color = ws.getWsPrototype("linecolor");
+            var linewidth = ws.getWsPrototype("linewidth");
+            var fill = ws.getWsPrototype("fill");
+            var center = ws.getWsPrototype("center");
+            var rotate = ws.getWsPrototype("rotate");
+            var size = ws.getWsPrototype("size");
+            var font = ws.getWsPrototype("font");
+            var text = ws.getWsPrototype("text");
+            var x = Draw.getX(center);
+            var y = Draw.getY(center);
+            $('#cvs').drawText({
+                fillStyle: fill,
+                strokeStyle: color,
+                strokeWidth: linewidth,
+                x: x, y: y,
+                fontSize: size,
+                fontFamily: font,
+                text: text
+            });
+
         },
         getX: function (coordinate) {
             return coordinate.split(",")[0].substr(1);
@@ -139,14 +275,14 @@
             return coordinate.split(",")[1].substr(0, coordinate.split(",")[1].length - 1);
         }
 
-    }
+    };
 
     function isValidCmd(cmd) {
         return true;
     }
 
     Array.prototype.getWsPrototype = function (val) {
-        for (var i = 0; i < this.length; i++) {
+        for (var i = 2; i < this.length; i++) {
             if (this[i].toLowerCase() == val) {
                 return this[i + 1];
             }
@@ -154,11 +290,21 @@
     };
 
     Array.prototype.remove = function (val) {
+
         for (var i = 0; i < this.length; i++) {
             if (this[i].toLowerCase() == val) {
                 this.splice(i, 1);
                 i--;
             }
+        }
+    }
+    Array.prototype.removeExceptCoordinate = function () {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i].toLowerCase().charAt(0) == "(" && this[i].toLowerCase().charAt(this[i].length - 1) == ")") {
+                continue;
+            }
+            this.remove(this[i]);
+            i--;
         }
     }
 </script>
