@@ -1,6 +1,8 @@
 # CMDraw
 CMDraw
+
 Example:
+
 draw rectangle center (300,200) width 400 height 200 fill #f5f5f5 linewidth 1 linecolor #00f rotate 25;
 
 draw polygon 
