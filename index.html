@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div style="width: 100%;height: 100%;display: flex;flex-direction: row">
+    <div style="width: 70%;background-color: #fff">
+        <canvas id="cvs" style="width: 100%;height: 100%;background: #fff">
+
+        </canvas>
+    </div>
+    <div style="width: 30%;background-color: #f5f5f5">
+        <textarea id="input-area" style="width: 100%;;height: 100%;background: transparent;position: relative;padding: 10px;border: none" ></textarea>
+    </div>
+</div>
+</body>
+<script src="../js/jquery.min.js"></script>
+<script src="jcanvas.min.js"></script>
+<script>
+    window.onload = function () {
+        var cvsWidth = $("#cvs").width();
+        var cvsHeight = $("#cvs").height();
+
+        console.log("cvsWidth:" + cvsWidth + ", cvsHeight" + cvsHeight);
+
+        $("#cvs").attr("width", cvsWidth);
+        $("#cvs").attr("height", cvsHeight);
+
+
+
+        var str = $("#input-area").val();
+        var cmds = str.split("\n");
+        cmds.remove("");
+        drawCmds(cmds);
+
+
+        $("#input-area").keydown(function (event) {
+            if(event.keyCode ==13){
+                var str = $("#input-area").val();
+                var cmds = str.split("\n");
+                cmds.remove("");
+                drawCmds(cmds);
+            }
+        });
+
+    };
+
+    function drawCmds(cmds) {
+        $("#cvs").clearCanvas();
+        for(var i = 0; i < cmds.length; i++){
+            if(isValidCmd(cmds[i])){
+                draw(cmds[i])
+            }
+        }
+    }
+
+    function draw(cmd) {
+        var ws = analyseCmd(cmd);
+
+        if (ws[0].toLowerCase() == "draw") {
+            if (ws[1].toLowerCase() == "line") {
+                Draw.drawLine(ws);
+            }
+        }
+    }
+
+    function analyseCmd(cmd) {
+        var ws = cmd.split(" ");
+        ws.remove("");
+        return ws;
+
+    }
+
+    var Draw = {
+        drawLine: function (ws) {
+            var name = ws.getWsPrototype("named");
+            var from = ws.getWsPrototype("from");
+            var to = ws.getWsPrototype("to");
+            var color = ws.getWsPrototype("colored");
+            var linewidth = ws.getWsPrototype("linewidth");
+
+            var x1 = from.split(",")[0].substr(1);
+            var y1 = from.split(",")[1].substr(0, from.split(",")[1].length - 1);
+            var x2 = to.split(",")[0].substr(1);
+            var y2 = to.split(",")[1].substr(0, to.split(",")[1].length - 1);
+            $("#cvs").drawLine({
+                x1:x1,
+                y1:y1,
+                x2:x2,
+                y2:y2,
+                strokeStyle: color,
+                strokeWidth: linewidth
+
+            })
+        }
+    }
+
+    function isValidCmd(cmd){
+        return true;
+    }
+
+    Array.prototype.getWsPrototype = function (val) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i].toLowerCase() == val) {
+                return this[i + 1];
+            }
+        }
+    };
+
+    Array.prototype.remove = function (val) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i].toLowerCase() == val) {
+                this.splice(i, 1);
+                i--;
+            }
+        }
+    }
+</script>
+</html>
