@@ -45,6 +45,7 @@
         var str = $("#input-area").val().replace(/\n/g, "");
         var cmds = str.split(";");
         cmds.remove("");
+
         drawCmds(cmds);
 
 
@@ -95,6 +96,8 @@
             if (ws[1].toLowerCase() == "text") {
                 Draw.drawText(ws);
             }
+        } else if (ws[0].toLowerCase() == "move") {
+            Draw.moveWidget(ws);
         }
     }
 
@@ -108,6 +111,8 @@
     var Draw = {
         drawLine: function (ws) {
             var name = ws.getWsPrototype("named");
+            name = name == undefined?createRandomName():name;
+            console.log(name)
             var from = ws.getWsPrototype("from");
             var to = ws.getWsPrototype("to");
             var color = ws.getWsPrototype("linecolor");
@@ -118,6 +123,8 @@
             var x2 = Draw.getX(to);
             var y2 = Draw.getY(to);
             $("#cvs").drawLine({
+                name: name,
+                layer: true,
                 x1: x1,
                 y1: y1,
                 x2: x2,
@@ -130,6 +137,7 @@
         },
         drawCircle: function (ws) {
             var name = ws.getWsPrototype("named");
+            name = name == undefined?createRandomName():name;
             var center = ws.getWsPrototype("center");
             var radius = ws.getWsPrototype("radius");
             var color = ws.getWsPrototype("linecolor");
@@ -140,6 +148,8 @@
             var y = Draw.getY(center);
 
             $("#cvs").drawArc({
+                name: name,
+                layer: true,
                 x: x,
                 y: y,
                 radius: radius,
@@ -151,6 +161,7 @@
         },
         drawRectangle: function (ws) {
             var name = ws.getWsPrototype("named");
+            name = name == undefined?createRandomName():name;
             var center = ws.getWsPrototype("center");
             var width = ws.getWsPrototype("width");
             var height = ws.getWsPrototype("height");
@@ -162,6 +173,8 @@
             var y = Draw.getY(center);
 
             $('#cvs').drawRect({
+                name: name,
+                layer: true,
                 fillStyle: fill,
                 strokeStyle: color,
                 strokeWidth: linewidth,
@@ -174,6 +187,8 @@
         },
         drawLines: function (ws) {
             var name = ws.getWsPrototype("named");
+            //console.log("name:"+name)
+            name = name == undefined?createRandomName():name;
             var color = ws.getWsPrototype("linecolor");
             var linewidth = ws.getWsPrototype("linewidth");
             var fill = ws.getWsPrototype("fill");
@@ -198,6 +213,7 @@
         },
         drawPolygon: function (ws) {
             var name = ws.getWsPrototype("named");
+            name = name == undefined?createRandomName():name;
             var color = ws.getWsPrototype("linecolor");
             var linewidth = ws.getWsPrototype("linewidth");
             var fill = ws.getWsPrototype("fill");
@@ -209,6 +225,8 @@
             var x = Draw.getX(center);
             var y = Draw.getY(center);
             $('#cvs').drawPolygon({
+                name: name,
+                layer: true,
                 fillStyle: fill,
                 strokeStyle: color,
                 x: x,
@@ -221,6 +239,7 @@
         },
         drawSlice: function (ws) {
             var name = ws.getWsPrototype("named");
+            name = name == undefined?createRandomName():name;
             var color = ws.getWsPrototype("linecolor");
             var linewidth = ws.getWsPrototype("linewidth");
             var fill = ws.getWsPrototype("fill");
@@ -232,6 +251,8 @@
             var x = Draw.getX(center);
             var y = Draw.getY(center);
             $('#cvs').drawSlice({
+                name: name,
+                layer: true,
                 fillStyle: fill,
                 strokeWidth: linewidth,
                 strokeStyle: color,
@@ -247,6 +268,7 @@
         },
         drawText: function (ws) {
             var name = ws.getWsPrototype("named");
+            name = name == undefined?createRandomName():name;
             var color = ws.getWsPrototype("linecolor");
             var linewidth = ws.getWsPrototype("linewidth");
             var fill = ws.getWsPrototype("fill");
@@ -258,6 +280,8 @@
             var x = Draw.getX(center);
             var y = Draw.getY(center);
             $('#cvs').drawText({
+                name: name,
+                layer: true,
                 fillStyle: fill,
                 strokeStyle: color,
                 strokeWidth: linewidth,
@@ -267,6 +291,16 @@
                 text: text
             });
 
+        },
+        moveWidget: function (ws) {
+            var name = ws[1];
+            var to = ws.getWsPrototype("to");
+            var x = Draw.getX(to);
+            var y = Draw.getY(to);
+            console.log(x+","+y);
+            $('#cvs').animateLayer(name, {
+                x: x, y: y
+            },'slow');
         },
         getX: function (coordinate) {
             return coordinate.split(",")[0].substr(1);
@@ -306,6 +340,15 @@
             this.remove(this[i]);
             i--;
         }
+    }
+    function createRandomName() {
+        var str =  "w";
+        for(var i = 0; i < 5; i++){
+            str += Math.floor(Math.random(10)*10);
+        }
+        console.log(str)
+        return str;
+
     }
 </script>
 </html>
